@@ -10,10 +10,3 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class BookReservationServiceImpl implements BookReservationService {
 
-    private final BookReservationRepository bookReservationRepository;
-
-    @Override
-    public BookReservation placeReservation (String bookTitle, String readerName, String readerAddress, int numberOfCopies) {
-        return bookReservationRepository.save(new BookReservation(bookTitle, readerName, readerAddress, (long) numberOfCopies));
-    }
-}
