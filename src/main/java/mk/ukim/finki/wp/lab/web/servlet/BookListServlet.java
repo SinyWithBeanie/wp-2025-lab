@@ -17,46 +17,37 @@ import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "BookListServlet", urlPatterns = "/")
+@WebServlet(name = "BookListServlet", urlPatterns = "/book")
 public class BookListServlet extends HttpServlet {
 
-    private SpringTemplateEngine templateEngine;
     private BookService bookService;
+    private SpringTemplateEngine springTemplateEngine;
 
-    @Override
-    public void init() {
-        // Fetch Spring beans from the application context because the container creates the servlet
-        WebApplicationContext ctx =
-                WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-        this.templateEngine = ctx.getBean(SpringTemplateEngine.class);
-        this.bookService = ctx.getBean(BookService.class);
+    public BookListServlet(BookService bookService, SpringTemplateEngine springTemplateEngine) {
+        this.bookService = bookService;
+        this.springTemplateEngine = springTemplateEngine;
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String searchText = req.getParameter("searchText");
+        String searchRating = req.getParameter("searchRating");
 
-        String text = req.getParameter("text");
-        Double rating = null;
-        try {
-            String r = req.getParameter("rating");
-            if (r != null && !r.isBlank()) rating = Double.valueOf(r);
-        } catch (Exception ignored) { /* keep rating as null if parsing fails */ }
-
-        // Query books (all or filtered)
-        List<Book> books = (text != null || rating != null)
-                ? bookService.searchBooks(text, rating)
-                : bookService.listAll();
+        List<Book> books;
+        if (searchText != null && !searchText.isEmpty() && searchRating != null && !searchRating.isEmpty()) {
+            double rating = Double.parseDouble(searchRating);
+            books = bookService.searchBooks(searchText, rating);
+        } else {
+            books = bookService.listAll();
+        }
 
         IWebExchange webExchange = JakartaServletWebApplication
                 .buildApplication(getServletContext())
                 .buildExchange(req, resp);
+
         WebContext context = new WebContext(webExchange);
         context.setVariable("books", books);
-        context.setVariable("text", text);
-        context.setVariable("rating", rating);
 
-        resp.setContentType("text/html;charset=UTF-8");
-        templateEngine.process("listBooks.html", context, resp.getWriter());
+        springTemplateEngine.process("listBooks.html", context, resp.getWriter());
     }
 }

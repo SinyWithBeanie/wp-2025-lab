@@ -13,41 +13,32 @@ import org.thymeleaf.web.IWebExchange;
 import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
 import java.io.IOException;
+import java.util.List;
 
-@WebServlet(name = "BookReservationServlet", urlPatterns = "/bookReservation")
-public class BookReservationServlet extends HttpServlet {
+@WebServlet(name = "ReservationServlet", urlPatterns = "/lab")
+public class ReservationServlet extends HttpServlet {
 
     private BookReservationService bookReservationService;
     private SpringTemplateEngine springTemplateEngine;
 
-    public BookReservationServlet(BookReservationService bookReservationService, SpringTemplateEngine springTemplateEngine) {
+    public ReservationServlet(BookReservationService bookReservationService, SpringTemplateEngine springTemplateEngine) {
         this.bookReservationService = bookReservationService;
         this.springTemplateEngine = springTemplateEngine;
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String bookTitle = req.getParameter("bookTitle");
-        String readerName = req.getParameter("readerName");
-        String readerAddress = req.getParameter("readerAddress");
-        String numCopies = req.getParameter("numCopies");
-
-        int numberOfCopies = Integer.parseInt(numCopies);
-        String clientIp = req.getRemoteAddr();
-
-        BookReservation reservation = bookReservationService.placeReservation(bookTitle, readerName, readerAddress, numberOfCopies);
+        List<BookReservation> reservations = bookReservationService.getReservationForBook(bookTitle);
 
         IWebExchange webExchange = JakartaServletWebApplication
                 .buildApplication(getServletContext())
                 .buildExchange(req, resp);
 
         WebContext context = new WebContext(webExchange);
-
-        context.setVariable("readerName", readerName);
-        context.setVariable("clientIp", clientIp);
         context.setVariable("bookTitle", bookTitle);
-        context.setVariable("numberOfCopies", numberOfCopies);
+        context.setVariable("reservations", reservations);
 
-        springTemplateEngine.process("reservationConfirmation.html", context, resp.getWriter());
+        springTemplateEngine.process("reservation.html", context, resp.getWriter());
     }
 }

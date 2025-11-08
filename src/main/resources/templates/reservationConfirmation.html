@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <title>Book Reservation - Confirmation</title>
     <style type="text/css">
         body {
@@ -17,11 +17,13 @@
             margin-top: 20px;
             border-collapse: collapse;
         }
-        table, td, th {
+        table,
+        td,
+        th {
             border: 1px solid #333;
         }
         th {
-            background-color: #4CAF50;
+            background-color: #4caf50;
             color: white;
             padding: 12px;
         }
@@ -44,7 +46,7 @@
         </tr>
         <tr>
             <td><b>Reader Name</b></td>
-            <td th:text="${reservation.readerName}"></td>
+            <td th:text="${readerName}"></td>
         </tr>
         <tr>
             <td><b>Client IP Address</b></td>
@@ -52,11 +54,11 @@
         </tr>
         <tr>
             <td><b>Reservation for Book</b></td>
-            <td th:text="${reservation.bookTitle}"></td>
+            <td th:text="${bookTitle}"></td>
         </tr>
         <tr>
             <td><b>Number of copies</b></td>
-            <td th:text="${reservation.numberOfCopies}"></td>
+            <td th:text="${numberOfCopies}"></td>
         </tr>
     </table>
 </section>
