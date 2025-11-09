@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8" />
     <title>Book Reservation - Welcome and choose a Book</title>
@@ -15,24 +15,107 @@
         form {
             margin-top: 20px;
         }
-        .book-option {
+        .book-list-item {
             margin: 10px 0;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .book-option:hover {
+        .book-list-item:hover {
             background-color: #f5f5f5;
+        }
+        .book-info {
+            flex-grow: 1;
+        }
+        .book-actions {
+            display: flex;
+            gap: 10px;
+            margin-left: 15px;
+        }
+        .reservation-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f0f8ff;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+        }
+        .add-book-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .add-book-btn:hover {
+            background-color: #45a049;
+        }
+        .edit-btn {
+            background-color: #2196F3;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .edit-btn:hover {
+            background-color: #0b7dda;
+        }
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background-color: #da190b;
+        }
+        .error {
+            color: red;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #ffebee;
+            border-radius: 5px;
+        }
+        .reserve-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+        .reserve-btn:hover {
+            background-color: #45a049;
         }
     </style>
 </head>
 <body>
 <header>
     <h1>Welcome to our Book Reservation App</h1>
+    <a href="/books/book-form" class="add-book-btn">+ Add New Book</a>
 </header>
 <main>
+    <!-- Display error message if present -->
+    <div th:if="${hasError}" class="error">
+        <p th:text="${error}"></p>
+    </div>
+
+    <!-- Search Form -->
     <h2>Search Books:</h2>
-    <form method="GET" style="margin-bottom: 20px">
+    <form method="GET" action="/books" style="margin-bottom: 20px">
         <label>Search Text:</label>
         <input
                 type="text"
@@ -51,40 +134,67 @@
         <input type="submit" value="Search" />
     </form>
 
-    <form action="/bookReservation" method="POST">
-        <h2>Choose a book:</h2>
-        <!-- Display radio buttons for each book,
-             the value should be the book title
-             and the displayed text should be:
-             Title: <book_title>, Genre: <book_genre>, Rating: <average_rating> -->
-
-        <div th:each="b : ${books}" class="book-option">
-            <label>
-                <input
-                        type="radio"
-                        name="bookTitle"
-                        th:value="${b.title}"
-                        required
-                />
-                <span>
-              Title: <span th:text="${b.title}"></span>, Genre:
-              <span th:text="${b.genre}"></span>, Rating:
-              <span th:text="${b.averageRating}"></span>
-            </span>
-            </label>
+    <!-- Book List (NO FORM - just display with Edit/Delete) -->
+    <h2>Available Books:</h2>
+    <div th:each="b : ${books}" class="book-list-item">
+        <div class="book-info">
+            <strong>Title:</strong> <span th:text="${b.title}"></span>,
+            <strong>Genre:</strong> <span th:text="${b.genre}"></span>,
+            <strong>Rating:</strong> <span th:text="${b.averageRating}"></span>,
+            <strong>Author:</strong> <span th:text="${b.author != null ? b.author.name + ' ' + b.author.surname : 'No author'}"></span>
         </div>
+        <div class="book-actions">
+            <!-- Edit Button -->
+            <a th:href="@{/books/book-form/{id}(id=${b.id})}" class="edit-btn">Edit</a>
+            <!-- Delete Button (independent form) -->
+            <form method="POST" th:action="@{/books/delete/{id}(id=${b.id})}" style="display: inline; margin: 0;">
+                <button type="submit"
+                        class="delete-btn"
+                        onclick="return confirm('Are you sure you want to delete this book?')">
+                    Delete
+                </button>
+            </form>
+        </div>
+    </div>
 
-        <h2>Enter your information:</h2>
-        <label>Your Name:</label>
-        <input type="text" name="readerName" required /><br />
-        <label>Your Address:</label>
-        <input type="text" name="readerAddress" required /><br />
+    <!-- Reservation Section (SEPARATE FORM) -->
+    <div class="reservation-section">
+        <h2>📚 Make a Reservation</h2>
+        <form action="/bookReservation" method="POST">
 
-        <h2>Choose number of copies:</h2>
-        <input type="number" name="numCopies" min="1" max="10" required /><br />
-        <br />
-        <input type="submit" value="Reserve Book" />
-    </form>
+            <div style="margin-bottom: 15px;">
+                <label><strong>Choose a book:</strong></label><br/>
+                <div th:each="b : ${books}" style="margin: 5px 0;">
+                    <label>
+                        <input
+                                type="radio"
+                                name="bookTitle"
+                                th:value="${b.title}"
+                                required
+                        />
+                        <span th:text="${b.title}"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label><strong>Your Name:</strong></label><br/>
+                <input type="text" name="readerName" required style="width: 100%; padding: 8px; box-sizing: border-box;" />
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label><strong>Your Address:</strong></label><br/>
+                <input type="text" name="readerAddress" required style="width: 100%; padding: 8px; box-sizing: border-box;" />
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label><strong>Number of copies (1-20):</strong></label><br/>
+                <input type="number" name="numCopies" min="1" max="20" required style="width: 150px; padding: 8px;" />
+            </div>
+
+            <button type="submit" class="reserve-btn">Reserve Book</button>
+        </form>
+    </div>
 </main>
 </body>
 </html>
