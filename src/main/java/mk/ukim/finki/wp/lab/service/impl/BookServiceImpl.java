@@ -28,16 +28,14 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public List<Book> searchBooks(String text, Double rating) {
-        return bookRepository.searchBooks(text, rating);
-    }
-
-    @Override
-    public Optional<Book> save(String  title, String genre, Double averageRating, Long authorId) {
-        Author author = authorRepository.findById(authorId).orElse(null);
-
-        Book book = new Book(title, genre, averageRating, author);
-
-        return bookRepository.save(book);
+        if (text != null && !text.isEmpty() && rating != null) {
+            return bookRepository.findByTitleContainingIgnoreCaseAndAverageRatingGreaterThanEqual(text, rating);
+        } else if (text != null && !text.isEmpty()) {
+            return bookRepository.findByTitleContainingIgnoreCase(text);
+        } else if (rating != null) {
+            return bookRepository.findByAverageRatingGreaterThanEqual(rating);
+        }
+        return bookRepository.findAll();
     }
 
     @Override
@@ -46,26 +44,34 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public Optional<Book> update(Long id, String title, String genre, Double averageRating, Long authorId) {
-        Optional<Book> existingBook = bookRepository.findById(id);
+    public Book save(String title, String genre, Double averageRating, Long authorId) {
+        Author author = authorRepository.findById(authorId).orElse(null);
+        Book book = new Book(title, genre, averageRating, author);
+        return bookRepository.save(book);
+    }
 
-        if (existingBook.isPresent()) {
-            Author author = authorRepository.findById(authorId).orElse(null);
+    @Override
+    public Book update(Long id, String title, String genre, Double averageRating, Long authorId) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Book not found with id: " + id));
 
-            Book book = existingBook.get();
-            book.setTitle(title);
-            book.setGenre(genre);
-            book.setAverageRating(averageRating);
-            book.setAuthor(author);
+        Author author = authorRepository.findById(authorId).orElse(null);
 
-            return Optional.empty();
-        }
+        book.setTitle(title);
+        book.setGenre(genre);
+        book.setAverageRating(averageRating);
+        book.setAuthor(author);
 
-        return Optional.empty();
+        return bookRepository.save(book);
     }
 
     @Override
     public void deleteById(Long id) {
         bookRepository.deleteById(id);
+    }
+
+    @Override
+    public List<Book> findByAuthorId(Long authorId) {
+        return bookRepository.findAllByAuthor_Id(authorId);
     }
 }

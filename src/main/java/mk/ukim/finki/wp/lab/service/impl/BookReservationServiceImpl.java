@@ -29,7 +29,7 @@ public class BookReservationServiceImpl implements BookReservationService {
                 bookTitle,
                 readerName,
                 readerAddress,
-                (long) numberOfCopies
+                numberOfCopies
         );
 
         return bookReservationRepository.save(bookReservation);

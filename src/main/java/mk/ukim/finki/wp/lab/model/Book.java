@@ -1,22 +1,38 @@
 package mk.ukim.finki.wp.lab.model;
 
-import lombok.AllArgsConstructor;
+import jakarta.persistence.*;
+import lombok.NoArgsConstructor;
 import lombok.Data;
 
-@Data // to generate getters, setters, toString, equals, and hashCode methods
-@AllArgsConstructor
+@Data
+@NoArgsConstructor
+@Entity
+@Table(name = "books")
 public class Book {
-    private String title;
-    private String genre;
-    private double averageRating;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
+    private String title;
+
+    private String genre;
+
+    private Double averageRating;
+
+    @ManyToOne
+    @JoinColumn(name = "author_id")
     private Author author;
 
-    public Book(String title, String genre, double averageRating, Author author) {
-        this.id = (long) (Math.random() * 1000);
+    @Column(nullable = false)
+    private Integer likes = 0;
+
+    public Book(String title, String genre, Double averageRating, Author author) {
         this.title = title;
         this.genre = genre;
         this.averageRating = averageRating;
         this.author = author;
+        this.likes = 0;
     }
 }

@@ -1,22 +1,16 @@
 package mk.ukim.finki.wp.lab.repository;
 
-import mk.ukim.finki.wp.lab.bootstrap.DataHolder;
 import mk.ukim.finki.wp.lab.model.Author;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
-public class AuthorRepository {
+public interface AuthorRepository extends JpaRepository<Author, Long> {
 
-    public List<Author> findAll() {
-        return DataHolder.authors;
-    }
+    // Custom query methods (optional)
+    List<Author> findByNameContainingIgnoreCase(String name);
 
-    public Optional<Author> findById(Long id) {
-        return DataHolder.authors.stream()
-                .filter(a -> a.getId().equals(id))
-                .findFirst();
-    }
+    List<Author> findBySurnameContainingIgnoreCase(String surname);
 }

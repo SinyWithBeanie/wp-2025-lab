@@ -98,6 +98,7 @@
         <label for="authorId">Author:</label>
         <select id="authorId" name="authorId" required>
             <option value="">-- Select an Author --</option>
+            <!-- Step 19: Authors populated from database via AuthorService -->
             <option th:each="author : ${authors}"
                     th:value="${author.id}"
                     th:text="${author.name + ' ' + author.surname}"
